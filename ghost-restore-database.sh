@@ -15,8 +15,8 @@
 GHOST_CONTAINER=$(docker ps -aqf "name=ghost-ghost")
 GHOST_BACKUPS_CONTAINER=$(docker ps -aqf "name=ghost-backups")
 GHOST_DB_NAME="ghostdb"
-GHOST_DB_USER=$(docker exec $GHOST_BACKUPS_CONTAINER printenv GHOST_DB_USER)
-MYSQL_PASSWORD=$(docker exec $GHOST_BACKUPS_CONTAINER printenv GHOST_DB_PASSWORD)
+GHOST_DB_USER=$(docker exec "$GHOST_BACKUPS_CONTAINER" printenv GHOST_DB_USER)
+MYSQL_PASSWORD=$(docker exec "$GHOST_BACKUPS_CONTAINER" printenv GHOST_DB_PASSWORD)
 BACKUP_PATH="/srv/ghost-mysql/backups/"
 
 echo "--> All available database backups:"
@@ -30,7 +30,7 @@ echo "--> Copy and paste the backup name from the list above to restore database
 echo "--> Example: ghost-mysql-backup-YYYY-MM-DD_hh-mm.gz"
 echo -n "--> "
 
-read SELECTED_DATABASE_BACKUP
+read -r SELECTED_DATABASE_BACKUP
 
 echo "--> $SELECTED_DATABASE_BACKUP was selected"
 
