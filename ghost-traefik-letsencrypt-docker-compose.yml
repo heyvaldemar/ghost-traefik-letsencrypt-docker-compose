@@ -27,6 +27,16 @@ volumes:
 services:
   mysql:
     image: *mysql-image
+    # Resource limits as .env-overridable defaults (e.g. GHOST_MYSQL_MEMORY_LIMIT=2g);
+    # the override survives every git pull.
+    deploy:
+      resources:
+        limits:
+          memory: ${GHOST_MYSQL_MEMORY_LIMIT:-1g}
+          cpus: "${GHOST_MYSQL_CPU_LIMIT:-1.0}"
+        reservations:
+          memory: ${GHOST_MYSQL_MEMORY_RESERVATION:-128m}
+          cpus: "${GHOST_MYSQL_CPU_RESERVATION:-0.25}"
     volumes:
       - mysql-data:/var/lib/mysql
     environment:
@@ -46,6 +56,16 @@ services:
 
   ghost:
     image: *ghost-image
+    # Resource limits as .env-overridable defaults (e.g. GHOST_MEMORY_LIMIT=2g);
+    # the override survives every git pull.
+    deploy:
+      resources:
+        limits:
+          memory: ${GHOST_MEMORY_LIMIT:-512m}
+          cpus: "${GHOST_CPU_LIMIT:-1.0}"
+        reservations:
+          memory: ${GHOST_MEMORY_RESERVATION:-64m}
+          cpus: "${GHOST_CPU_RESERVATION:-0.25}"
     volumes:
       - ghost-data:${DATA_PATH:-/var/lib/ghost/content}
     environment:
@@ -97,6 +117,16 @@ services:
 
   traefik:
     image: *traefik-image
+    # Resource limits as .env-overridable defaults (e.g. TRAEFIK_MEMORY_LIMIT=2g);
+    # the override survives every git pull.
+    deploy:
+      resources:
+        limits:
+          memory: ${TRAEFIK_MEMORY_LIMIT:-256m}
+          cpus: "${TRAEFIK_CPU_LIMIT:-0.5}"
+        reservations:
+          memory: ${TRAEFIK_MEMORY_RESERVATION:-64m}
+          cpus: "${TRAEFIK_CPU_RESERVATION:-0.1}"
     command:
       # Set the log level (DEBUG, INFO, WARN, ERROR)
       - "--log.level=${TRAEFIK_LOG_LEVEL:-WARN}"
@@ -169,6 +199,16 @@ services:
 
   backups:
     image: *mysql-image
+    # Resource limits as .env-overridable defaults (e.g. GHOST_BACKUPS_MEMORY_LIMIT=2g);
+    # the override survives every git pull.
+    deploy:
+      resources:
+        limits:
+          memory: ${GHOST_BACKUPS_MEMORY_LIMIT:-256m}
+          cpus: "${GHOST_BACKUPS_CPU_LIMIT:-0.5}"
+        reservations:
+          memory: ${GHOST_BACKUPS_MEMORY_RESERVATION:-32m}
+          cpus: "${GHOST_BACKUPS_CPU_RESERVATION:-0.1}"
     command: >-
       bash -c 'set -o pipefail;
       sleep "$$BACKUP_INIT_SLEEP";
