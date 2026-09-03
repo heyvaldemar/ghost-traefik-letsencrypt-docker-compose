@@ -16,7 +16,7 @@
 - [Security Notes](#security-notes)
 - [About the maintainer](#about-the-maintainer)
 
-This repository deploys **Ghost** behind **Traefik** with automatic **Let's Encrypt TLS**, backed by **MySQL 8.4**, with scheduled **backups** (database + content) and companion **restore scripts**. One `docker compose up` away from a publishing platform at `https://your-domain`.
+This repository deploys Ghost behind Traefik with automatic Let's Encrypt TLS, backed by MySQL 8.4, with scheduled backups (database + content) and companion restore scripts. One `docker compose up` away from a publishing platform at `https://your-domain`.
 
 📙 Full narrative installation guide on the blog: [heyvaldemar.com/install-ghost-using-docker-compose/](https://www.heyvaldemar.com/install-ghost-using-docker-compose/).
 
@@ -65,7 +65,7 @@ $EDITOR .env
 docker compose -f ghost-traefik-letsencrypt-docker-compose.yml -p ghost up -d
 ```
 
-Within a minute `https://${GHOST_HOSTNAME}` serves your blog with a fresh Let's Encrypt certificate. **Create the admin account right away** at `https://${GHOST_HOSTNAME}/ghost`: the setup screen is open until someone claims it.
+Within a minute `https://${GHOST_HOSTNAME}` serves your blog with a fresh Let's Encrypt certificate. Create the admin account right away at `https://${GHOST_HOSTNAME}/ghost`: the setup screen is open until someone claims it.
 
 ### What success looks like
 
@@ -108,7 +108,7 @@ docker compose -f ghost-traefik-letsencrypt-docker-compose.yml -p ghost up -d --
 
 ## Supply chain trust
 
-This repository is a **deployment template**, not a custom Docker image. It orchestrates three upstream images:
+This repository is a deployment template, not a custom Docker image. It orchestrates three upstream images:
 
 - [`traefik`](https://hub.docker.com/_/traefik): reverse proxy, Docker Hub official image
 - [`ghost`](https://hub.docker.com/_/ghost): Ghost, Docker Hub official image
@@ -173,7 +173,7 @@ chmod +x tests/e2e-backup-restore.sh
 
 It stops the database container briefly to prove failure detection. Run it on a staging copy, not on production.
 
-## Security Notes
+## Security notes
 
 - Credentials are read from `.env` at deploy time; `.env` is gitignored and compose fails fast on missing required variables.
 - **Pre-rotation advisory.** Releases before v1.0.0 (2026-08-31) shipped a tracked `.env` with generated-looking database passwords. Rotate them if your deployment reused them.
