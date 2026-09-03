@@ -25,6 +25,10 @@ _(no unreleased changes yet)_
   `docker compose up` fails with an invalid reference instead of
   deploying something unexpected.
 
+### Changed
+
+- `ghost` 6.61.0 to 6.62.0.
+
 ## [1.4.0] - 2026-09-02
 
 ### Security
