@@ -6,9 +6,9 @@
 # CI (Trivy scans, check-pin-freshness, the ephemeral test .env) reads
 # the pins from these lines — this block is the single source of truth.
 x-images:
-  traefik: &traefik-image ${TRAEFIK_IMAGE_TAG:-traefik:3.7@sha256:9c2a54d87f76f5c2f5f2682c68394af92fb12c0a2686798d6462a3f84bd78eaf}
-  mysql: &mysql-image ${GHOST_MYSQL_IMAGE_TAG:-mysql:8.4-oracle@sha256:b3b90af2a6552ae30c266fdb7d5dd55f3afb72404bb78d37fe8a23eb857fd3fb}
-  ghost: &ghost-image ${GHOST_IMAGE_TAG:-ghost:6.61.0@sha256:6ec475e635319047a777a97518602325f256fbc36fc4f3c164e443a1b2483653}
+  traefik: &traefik-image ${TRAEFIK_IMAGE_TAG:-traefik:${TRAEFIK_IMAGE_VERSION:-3.7@sha256:9c2a54d87f76f5c2f5f2682c68394af92fb12c0a2686798d6462a3f84bd78eaf}}
+  mysql: &mysql-image ${GHOST_MYSQL_IMAGE_TAG:-mysql:${GHOST_MYSQL_IMAGE_VERSION:-8.4-oracle@sha256:b3b90af2a6552ae30c266fdb7d5dd55f3afb72404bb78d37fe8a23eb857fd3fb}}
+  ghost: &ghost-image ${GHOST_IMAGE_TAG:-ghost:${GHOST_IMAGE_VERSION:-6.61.0@sha256:6ec475e635319047a777a97518602325f256fbc36fc4f3c164e443a1b2483653}}
 
 networks:
   ghost-network:
