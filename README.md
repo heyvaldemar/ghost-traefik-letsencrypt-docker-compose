@@ -1,4 +1,4 @@
-# Ghost + Traefik + Let's Encrypt — Docker Compose
+# Ghost + Traefik + Let's Encrypt on Docker Compose
 
 [![Deployment Verification](https://github.com/heyvaldemar/ghost-traefik-letsencrypt-docker-compose/actions/workflows/deployment-verification.yml/badge.svg?branch=main)](https://github.com/heyvaldemar/ghost-traefik-letsencrypt-docker-compose/actions/workflows/deployment-verification.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -40,7 +40,7 @@ Four moving parts (Traefik + Ghost + MySQL + backups). No Kubernetes prerequisit
 
 - **A Linux server** with a public IP. Tested on Ubuntu 22.04 LTS+ and Debian 12+.
 - **Docker Engine 24+ and Docker Compose 2.20+.**
-- **A domain you control,** with two `A` records pointing at your server's public IP — one for Ghost, one for the Traefik dashboard. DNS must propagate before deploy.
+- **A domain you control,** with two `A` records pointing at your server's public IP: one for Ghost, one for the Traefik dashboard. DNS must propagate before deploy.
 - **Ports 80 and 443 open** on the server's firewall.
 - **~1 GB free RAM** for the running stack, plus disk for images/content and backups.
 
@@ -65,7 +65,7 @@ $EDITOR .env
 docker compose -f ghost-traefik-letsencrypt-docker-compose.yml -p ghost up -d
 ```
 
-Within a minute `https://${GHOST_HOSTNAME}` serves your blog with a fresh Let's Encrypt certificate. **Create the admin account right away** at `https://${GHOST_HOSTNAME}/ghost` — the setup screen is open until someone claims it.
+Within a minute `https://${GHOST_HOSTNAME}` serves your blog with a fresh Let's Encrypt certificate. **Create the admin account right away** at `https://${GHOST_HOSTNAME}/ghost`: the setup screen is open until someone claims it.
 
 ### What success looks like
 
@@ -99,39 +99,39 @@ docker compose -f ghost-traefik-letsencrypt-docker-compose.yml -p ghost up -d --
 
 ## Features
 
-- **Ghost 6** — posts, pages, memberships, newsletters, native SEO.
+- **Ghost 6**: posts, pages, memberships, newsletters, native SEO.
 - **MySQL 8.4 LTS** backing store with healthcheck and start-order dependency.
 - **Traefik v3** with automatic HTTP→HTTPS redirect and Let's Encrypt TLS-ALPN certificate issuance.
 - **Basic-auth protected Traefik dashboard** on a separate hostname.
 - **Scheduled backups** of the database (`mysqldump | gzip`) and the content directory (themes, images) with retention pruning, plus restore scripts for both.
-- **Credentials required at deploy time** — compose fails fast if `.env` is incomplete.
+- **Credentials required at deploy time**: compose fails fast if `.env` is incomplete.
 
 ## Supply chain trust
 
 This repository is a **deployment template**, not a custom Docker image. It orchestrates three upstream images:
 
-- [`traefik`](https://hub.docker.com/_/traefik) — reverse proxy, Docker Hub official image
-- [`ghost`](https://hub.docker.com/_/ghost) — Ghost, Docker Hub official image
-- [`mysql`](https://hub.docker.com/_/mysql) — MySQL, Docker Hub official image
+- [`traefik`](https://hub.docker.com/_/traefik): reverse proxy, Docker Hub official image
+- [`ghost`](https://hub.docker.com/_/ghost): Ghost, Docker Hub official image
+- [`mysql`](https://hub.docker.com/_/mysql): MySQL, Docker Hub official image
 
-All three are pinned to `tag@sha256:<digest>` as interpolation defaults in the compose file's `x-images` block — `git pull` alone delivers the version combination this repository has tested; an `*_IMAGE_TAG` variable in `.env` overrides deliberately.
+All three are pinned to `tag@sha256:<digest>` as interpolation defaults in the compose file's `x-images` block. `git pull` alone delivers the version combination this repository has tested; an `*_IMAGE_TAG` variable in `.env` overrides deliberately.
 
 The daily `check-pin-freshness` CI job re-resolves each pinned tag against its registry and compares the pinned Ghost and Traefik versions against the latest upstream releases. CI runs on every push, pull request, and every day at 06:00 UTC. GitHub Actions are pinned by commit SHA; Dependabot keeps those fresh.
 
 ## Production checklist
 
-- [ ] **Claim the admin account immediately** at `/ghost` — the setup screen is first-come-first-served.
+- [ ] **Claim the admin account immediately** at `/ghost`: the setup screen is first-come-first-served.
 - [ ] **Strong secrets.** Both database passwords at 24+ random characters; regenerate the Traefik dashboard BCrypt hash per deployment.
 - [ ] **Configure mail in Ghost** (Settings → Email newsletter) if you use memberships/newsletters.
 - [ ] **Host-mount the backup volumes** for disaster recovery.
 - [ ] **Verify Let's Encrypt cert issuance** in the Traefik logs on first start.
-- [ ] **Back up before upgrades** — Ghost migrates its schema forward automatically; the way back is a restore.
+- [ ] **Back up before upgrades**: Ghost migrates its schema forward automatically; the way back is a restore.
 
 ## Backups
 
 The `backups` container performs a dump → archive → prune → sleep loop: `mysqldump | gzip` of the Ghost database, `tar.gz` of the content directory, pruning by retention windows, then sleeping `BACKUP_INTERVAL` (default 24h).
 
-Each cycle logs `Database backup OK: <file> (<bytes> bytes)` or `Database backup FAILED` (the same for the data archive where there is one). A failed dump is kept as `<file>.failed` for diagnosis and never overwrites a good backup — grep the log for `FAILED` from your monitoring.
+Each cycle logs `Database backup OK: <file> (<bytes> bytes)` or `Database backup FAILED` (the same for the data archive where there is one). A failed dump is kept as `<file>.failed` for diagnosis and never overwrites a good backup. Grep the log for `FAILED` from your monitoring.
 
 **Verify backups are running:**
 
@@ -143,7 +143,7 @@ docker compose -p ghost logs backups | tail -5
 
 ## Resource limits
 
-Every service carries memory and CPU limits plus reservations as compose-level defaults — the same values CI boots the stack under. Override any of them in `.env` (the knobs and their defaults are listed in `.env.example`, e.g. `TRAEFIK_MEMORY_LIMIT=512m`) and the override survives every `git pull`. If a service is OOM-killed under real load, `docker inspect <container> --format '{{.State.OOMKilled}}'` says so; raise its `_MEMORY_LIMIT` and recreate.
+Every service carries memory and CPU limits plus reservations as compose-level defaults: the same values CI boots the stack under. Override any of them in `.env` (the knobs and their defaults are listed in `.env.example`, e.g. `TRAEFIK_MEMORY_LIMIT=512m`) and the override survives every `git pull`. If a service is OOM-killed under real load, `docker inspect <container> --format '{{.State.OOMKilled}}'` says so; raise its `_MEMORY_LIMIT` and recreate.
 
 ## Container hardening
 
@@ -153,23 +153,23 @@ Every service runs with `security_opt: no-new-privileges:true`, so a process can
 
 The [Deployment Verification](https://github.com/heyvaldemar/ghost-traefik-letsencrypt-docker-compose/actions/workflows/deployment-verification.yml?query=branch%3Amain) workflow runs on every push, pull request, and every day at 06:00 UTC:
 
-1. **Lint** — shellcheck on both restore scripts, actionlint on the workflow.
+1. **Lint**: shellcheck on both restore scripts, actionlint on the workflow.
 2. **Trivy scans** of all three pinned images (CRITICAL/HIGH, SARIF to the Security tab).
-3. **Pin freshness** (daily/manual) — digest drift plus release-lag checks for Ghost and Traefik.
-4. **Deploy-and-test** — boots the full stack with ephemeral credentials and requires the front page to answer 200 through Traefik.
+3. **Pin freshness** (daily/manual): digest drift plus release-lag checks for Ghost and Traefik.
+4. **Deploy-and-test**: boots the full stack with ephemeral credentials and requires the front page to answer 200 through Traefik.
 
 A green run is the authoritative proof that the template deploys end-to-end and that its backups restore.
 
 ### Backup and restore, proven
 
-`tests/e2e-backup-restore.sh` runs against the live stack and is what CI executes after the HTTPS smoke. The scenario that matters most is the restore roundtrip: insert a marker row, restore the earliest backup, assert the marker is gone — a backup that cannot be restored fails the build. Run it yourself against a running deployment with short intervals in `.env` (`BACKUP_INIT_SLEEP=15s`, `BACKUP_INTERVAL=60s`):
+`tests/e2e-backup-restore.sh` runs against the live stack and is what CI executes after the HTTPS smoke. The scenario that matters most is the restore roundtrip: insert a marker row, restore the earliest backup, assert the marker is gone. A backup that cannot be restored fails the build. Run it yourself against a running deployment with short intervals in `.env` (`BACKUP_INIT_SLEEP=15s`, `BACKUP_INTERVAL=60s`):
 
 ```bash
 chmod +x tests/e2e-backup-restore.sh
 ./tests/e2e-backup-restore.sh
 ```
 
-It stops the database container briefly to prove failure detection — run it on a staging copy, not on production.
+It stops the database container briefly to prove failure detection. Run it on a staging copy, not on production.
 
 ## Security Notes
 
@@ -184,7 +184,7 @@ It stops the database container briefly to prove failure detection — run it on
 
 <div align="center">
 
-**Maintained by [Vladimir Mikhalev](https://github.com/heyvaldemar)** — Docker Captain · IBM Champion · AWS Community Builder
+**Maintained by [Vladimir Mikhalev](https://github.com/heyvaldemar)** · Docker Captain · IBM Champion · AWS Community Builder
 
 [YouTube](https://www.youtube.com/channel/UCf85kQ0u1sYTTTyKVpxrlyQ?sub_confirmation=1) · [Blog](https://heyvaldemar.com) · [LinkedIn](https://www.linkedin.com/in/heyvaldemar/)
 
