@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_(no unreleased changes yet)_
+### Changed
+
+- **`ghost:6.62.0` moved to `ghost:6.63.0`.** The freshness check reported the lag; the deploy job booted the stack on the new image before this landed.
+
+### Security
+
+- **`mysql:8.4-oracle` was rebuilt upstream**; the pin moved from `sha256:b3b90af2a655…` to `sha256:3466ba4a4828…`. Same version, same tag, a rebuilt base image — the usual shape of a security fix in a base layer.
 
 ## [1.8.0] - 2026-09-07
 
