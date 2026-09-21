@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+_(no unreleased changes yet)_
+
+## [1.8.7] - 2026-09-21
+
 ### Changed
 
 - **The database backup no longer prints an error on every successful run.** `mysqldump` was asking for tablespace information the application user has no privilege to read, printing `Access denied; you need (at least one of) the PROCESS privilege(s)` each time, exiting 0, and writing a complete dump regardless. `--no-tablespaces` removes the request. Measured against the pinned image: both dumps hash identically, 1819 bytes each — the flag removes the error line and changes nothing else. An error in the log of an operation that succeeded is what teaches somebody to skim past the one that matters.
@@ -235,7 +239,8 @@ v1.2.0.
 
 - Shellcheck findings in both restore scripts.
 
-[Unreleased]: https://github.com/heyvaldemar/ghost-traefik-letsencrypt-docker-compose/compare/v1.8.6...HEAD
+[Unreleased]: https://github.com/heyvaldemar/ghost-traefik-letsencrypt-docker-compose/compare/v1.8.7...HEAD
+[1.8.7]: https://github.com/heyvaldemar/ghost-traefik-letsencrypt-docker-compose/compare/v1.8.6...v1.8.7
 [1.8.6]: https://github.com/heyvaldemar/ghost-traefik-letsencrypt-docker-compose/compare/v1.8.5...v1.8.6
 [1.8.5]: https://github.com/heyvaldemar/ghost-traefik-letsencrypt-docker-compose/compare/v1.8.4...v1.8.5
 [1.8.4]: https://github.com/heyvaldemar/ghost-traefik-letsencrypt-docker-compose/compare/v1.8.3...v1.8.4
