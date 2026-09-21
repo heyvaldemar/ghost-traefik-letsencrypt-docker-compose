@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_(no unreleased changes yet)_
+### Changed
+
+- **The database backup no longer prints an error on every successful run.** `mysqldump` was asking for tablespace information the application user has no privilege to read, printing `Access denied; you need (at least one of) the PROCESS privilege(s)` each time, exiting 0, and writing a complete dump regardless. `--no-tablespaces` removes the request. Measured against the pinned image: both dumps hash identically, 1819 bytes each — the flag removes the error line and changes nothing else. An error in the log of an operation that succeeded is what teaches somebody to skim past the one that matters.
 
 ## [1.8.6] - 2026-09-19
 
