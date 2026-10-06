@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+_(no unreleased changes yet)_
+
+## [1.9.2] - 2026-10-06
+
 ### Security
 
 - **`ghost:6.67.0` was rebuilt upstream**; the pin moved from `sha256:428ce627d581…` to `sha256:9482099b1c87…`. Same version, same tag, a rebuilt base image — the usual shape of a security fix in a base layer.
@@ -302,7 +306,8 @@ v1.2.0.
 
 - Shellcheck findings in both restore scripts.
 
-[Unreleased]: https://github.com/heyvaldemar/ghost-traefik-letsencrypt-docker-compose/compare/v1.9.1...HEAD
+[Unreleased]: https://github.com/heyvaldemar/ghost-traefik-letsencrypt-docker-compose/compare/v1.9.2...HEAD
+[1.9.2]: https://github.com/heyvaldemar/ghost-traefik-letsencrypt-docker-compose/compare/v1.9.1...v1.9.2
 [1.9.1]: https://github.com/heyvaldemar/ghost-traefik-letsencrypt-docker-compose/compare/v1.9.0...v1.9.1
 [1.9.0]: https://github.com/heyvaldemar/ghost-traefik-letsencrypt-docker-compose/compare/v1.8.10...v1.9.0
 [1.8.8]: https://github.com/heyvaldemar/ghost-traefik-letsencrypt-docker-compose/compare/v1.8.7...v1.8.8
