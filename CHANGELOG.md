@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_(no unreleased changes yet)_
+### Security
+
+- **`mysql:8.4-oracle` was rebuilt upstream**; the pin moved from `sha256:24989179f588…` to `sha256:0f51e63e537a…`. Same version, same tag, a rebuilt base image — the usual shape of a security fix in a base layer.
 
 ## [1.9.8] - 2026-10-16
 
