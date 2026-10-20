@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+_(no unreleased changes yet)_
+
+## [1.9.9] - 2026-10-20
+
 ### Security
 
 - **`mysql:8.4-oracle` was rebuilt upstream**; the pin moved from `sha256:24989179f588…` to `sha256:0f51e63e537a…`. Same version, same tag, a rebuilt base image — the usual shape of a security fix in a base layer.
@@ -356,7 +360,8 @@ v1.2.0.
 
 - Shellcheck findings in both restore scripts.
 
-[Unreleased]: https://github.com/heyvaldemar/ghost-traefik-letsencrypt-docker-compose/compare/v1.9.8...HEAD
+[Unreleased]: https://github.com/heyvaldemar/ghost-traefik-letsencrypt-docker-compose/compare/v1.9.9...HEAD
+[1.9.9]: https://github.com/heyvaldemar/ghost-traefik-letsencrypt-docker-compose/compare/v1.9.8...v1.9.9
 [1.9.8]: https://github.com/heyvaldemar/ghost-traefik-letsencrypt-docker-compose/compare/v1.9.7...v1.9.8
 [1.9.7]: https://github.com/heyvaldemar/ghost-traefik-letsencrypt-docker-compose/compare/v1.9.6...v1.9.7
 [1.9.6]: https://github.com/heyvaldemar/ghost-traefik-letsencrypt-docker-compose/compare/v1.9.5...v1.9.6
