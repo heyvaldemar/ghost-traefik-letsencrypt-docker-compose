@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+_(no unreleased changes yet)_
+
+## [1.9.16] - 2026-10-28
+
 ### Changed
 
 - **`ghost:6.72.0` moved to `ghost:6.73.0`.** The freshness check reported the lag; the deploy job booted the stack on the new image before this landed.
@@ -403,7 +407,8 @@ v1.2.0.
 
 - Shellcheck findings in both restore scripts.
 
-[Unreleased]: https://github.com/heyvaldemar/ghost-traefik-letsencrypt-docker-compose/compare/v1.9.15...HEAD
+[Unreleased]: https://github.com/heyvaldemar/ghost-traefik-letsencrypt-docker-compose/compare/v1.9.16...HEAD
+[1.9.16]: https://github.com/heyvaldemar/ghost-traefik-letsencrypt-docker-compose/compare/v1.9.15...v1.9.16
 [1.9.15]: https://github.com/heyvaldemar/ghost-traefik-letsencrypt-docker-compose/compare/v1.9.14...v1.9.15
 [1.9.14]: https://github.com/heyvaldemar/ghost-traefik-letsencrypt-docker-compose/compare/v1.9.13...v1.9.14
 [1.9.13]: https://github.com/heyvaldemar/ghost-traefik-letsencrypt-docker-compose/compare/v1.9.12...v1.9.13
