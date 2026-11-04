@@ -8,7 +8,7 @@
 x-images:
   traefik: &traefik-image ${TRAEFIK_IMAGE_TAG:-traefik:${TRAEFIK_IMAGE_VERSION:-3.7@sha256:68ae5fe5b64ca166704b746a9e8afcd385e36b3f569a5691401bf652d57b3748}}
   mysql: &mysql-image ${GHOST_MYSQL_IMAGE_TAG:-mysql:${GHOST_MYSQL_IMAGE_VERSION:-8.4-oracle@sha256:a81d043930e51745522bd5c430961cf8286f0a23f0a9a2a6e0108f7ea71b0902}}
-  ghost: &ghost-image ${GHOST_IMAGE_TAG:-ghost:${GHOST_IMAGE_VERSION:-6.73.0@sha256:3e62a20e7f172af9c313bcd74c67098359c4fa7f7121a20ebd740c9f6cd0c0b9}}
+  ghost: &ghost-image ${GHOST_IMAGE_TAG:-ghost:${GHOST_IMAGE_VERSION:-6.74.0@sha256:bee5368f718f04ea85129045588a0afc6e6effc3bb0a369e8859337bc19d8b9b}}
 
 networks:
   ghost-network:
