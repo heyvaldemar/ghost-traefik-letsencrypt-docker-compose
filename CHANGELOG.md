@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_(no unreleased changes yet)_
+### Security
+
+- **The database password is no longer on any command line.** The backup loop ran `mysqldump -p"…"`, and `ghost-restore-database.sh` handed the password to `docker exec -e MYSQL_PWD=…`. Both put the value in a process's arguments, and every user on the host reads those with `ps`: `/proc/<pid>/cmdline` is world-readable, and the host sees every container's processes. The client overwrites its copy once it has parsed it, but only after it was readable, and the overwrite leaves the password's length on show as a row of `x`. Now the client reads `MYSQL_PWD` from its environment, set inside the container, and the password never leaves the backups container. Verified on the pinned `mysql:8.4-oracle`: it reads the variable (a wrong value is refused with 1045) and prints no warning. CI proves it on every run: one backup is held open by a table lock while every command line on the runner and in the backups container is read, and a sampler reads every command line on the runner for the whole suite. Neither may contain the password, compared through a file so the value is never printed.
 
 ## [1.9.23] - 2026-11-06
 

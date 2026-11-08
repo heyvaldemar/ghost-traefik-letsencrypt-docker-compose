@@ -48,6 +48,7 @@ BACKUP_EXT=".gz"
 INTERVAL="${BACKUP_INTERVAL}"
 DB_USER="${GHOST_DB_USER}"
 DB_PASS="${GHOST_DB_PASSWORD}"
+export MYSQL_PWD="$DB_PASS"   # every client below reads it from here, never from -p
 DB_NAME="${GHOST_DB_NAME}"
 DB_HOST="mysql"
 
@@ -105,10 +106,10 @@ backups_sh() {
 }
 
 db_query() {
-  docker exec "$BACKUPS_CONTAINER" mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASS" -N -s -e "$1" "$DB_NAME" 2>/dev/null
+  docker exec -e MYSQL_PWD "$BACKUPS_CONTAINER" mysql -h "$DB_HOST" -u "$DB_USER" -N -s -e "$1" "$DB_NAME" 2>/dev/null
 }
 db_ready() {
-  docker exec "$BACKUPS_CONTAINER" mysqladmin -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASS" ping > /dev/null 2>&1
+  docker exec -e MYSQL_PWD "$BACKUPS_CONTAINER" mysqladmin -h "$DB_HOST" -u "$DB_USER" ping > /dev/null 2>&1
 }
 marker_create() { db_query "CREATE TABLE IF NOT EXISTS e2e_marker (id int PRIMARY KEY);" > /dev/null; }
 marker_insert() { db_query "CREATE TABLE IF NOT EXISTS restore_test (id int); INSERT INTO restore_test VALUES (1);" > /dev/null; }
@@ -298,6 +299,106 @@ test_prune_removes_old() {
   [[ -n "$(list_backups)" ]] || { fail "prune removed everything, including recent backups"; return 1; }
 }
 
+# --- No password on any command line ---
+#
+# A process's arguments are /proc/<pid>/cmdline, mode 0444: every user on the
+# host reads them with ps, and the host sees every container's processes. Its
+# environment is /proc/<pid>/environ, readable by its owner alone. So the
+# password reaches each client as MYSQL_PWD, never as -p. Two proofs, both
+# matched against a file holding the value, so the value is never printed and
+# never becomes an argument of the comparison itself:
+#   - a sampler reads every command line on this machine several times a second
+#     for the whole suite;
+#   - one backup is held open by a table lock, and its dump process is read
+#     while it runs, on the host and inside the backups container.
+PW_FILE="$(mktemp)"; PS_COUNTS="$(mktemp)"; PS_SAMPLER=""
+trap 'rm -f "$PW_FILE" "$PS_COUNTS"; [[ -z "$PS_SAMPLER" ]] || kill "$PS_SAMPLER" 2>/dev/null || true' EXIT
+chmod 600 "$PW_FILE"; printf '%s\n' "$DB_PASS" > "$PW_FILE"
+PW_SUM="sha256:$(printf '%s' "$DB_PASS" | sha256sum | cut -c1-12)"   # names the value in this log without showing it
+
+argv_hits() { grep -cF -f "$PW_FILE" || true; }                 # lines on stdin that contain the value
+cmdlines_in() {                                                   # every command line inside one container
+  docker exec "$1" sh -c 'for f in /proc/[0-9]*/cmdline; do tr "\000" " " < "$f" 2>/dev/null; echo; done'
+}
+seconds_of() {
+  case "$1" in
+    *h) echo $(( ${1%h} * 3600 )) ;;
+    *m) echo $(( ${1%m} * 60 )) ;;
+    *s) echo "${1%s}" ;;
+    *) echo "$1" ;;
+  esac
+}
+ps_sampler_start() {
+  ( while :; do ps -eo args= 2>/dev/null | argv_hits >> "$PS_COUNTS"; sleep 0.2; done ) &
+  PS_SAMPLER=$!
+}
+ps_sampler_stop() {
+  [[ -n "$PS_SAMPLER" ]] || return 0
+  kill "$PS_SAMPLER" 2>/dev/null || true; wait "$PS_SAMPLER" 2>/dev/null || true; PS_SAMPLER=""
+}
+
+test_dump_runs_without_password_in_argv() {
+  # A write lock on a table the dump has to read keeps the dump waiting, so
+  # its process can be read while the backup runs rather than guessed at.
+  local init hold locker since dump="" i ok="" hits_host hits_bkp id="" net img
+  init=$(seconds_of "${BACKUP_INIT_SLEEP:-30m}")
+  [[ "$init" -le 120 ]] || { fail "BACKUP_INIT_SLEEP is ${BACKUP_INIT_SLEEP:-30m}; this test needs a short one (CI uses 15s)"; return 1; }
+  hold=$(( init + 75 ))
+  db_query "CREATE TABLE IF NOT EXISTS zz_argv_probe (id int); INSERT INTO zz_argv_probe VALUES (1);" > /dev/null \
+    || { fail "could not create the probe table"; return 1; }
+  # The lock is held from a throwaway container of the backups image on the
+  # stack's network, the same way in as the dump: the backups container itself
+  # restarts below, and would take the session with it.
+  net="$(docker inspect -f '{{range $k, $v := .NetworkSettings.Networks}}{{println $k}}{{end}}' "$BACKUPS_CONTAINER" | head -n 1)"
+  img="$(docker inspect -f '{{.Config.Image}}' "$BACKUPS_CONTAINER")"
+  docker run --rm --network "$net" --entrypoint mysql -e MYSQL_PWD "$img" -h "$DB_HOST" -u "$DB_USER" "$DB_NAME" \
+    -e "LOCK TABLES zz_argv_probe WRITE; SELECT SLEEP($hold); UNLOCK TABLES;" > /dev/null 2>&1 &
+  locker=$!
+  for (( i = 0; i < 30; i++ )); do
+    id="$(db_query "SELECT id FROM information_schema.processlist WHERE info LIKE 'SELECT SLEEP(%' LIMIT 1;" | tr -d '[:space:]')"
+    [[ -n "$id" ]] && break
+    sleep 1
+  done
+  [[ -n "$id" ]] || { fail "the session holding the lock never started"; return 1; }
+  since="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  echo "  restarting the backups service; its first dump waits on the lock"
+  docker restart "$BACKUPS_CONTAINER" > /dev/null
+  for (( i = 0; i < init + 50; i++ )); do
+    dump="$(ps -eo comm=,args= | awk '$1 == "mariadb-dump" || $1 == "mysqldump" { $1 = ""; sub(/^ /, ""); print; exit }')"
+    [[ -n "$dump" ]] && break
+    sleep 1
+  done
+  hits_host=$(ps -eo args= | argv_hits)
+  hits_bkp=$(cmdlines_in "$BACKUPS_CONTAINER" | argv_hits)
+  db_query "KILL $id;" > /dev/null 2>&1 || true
+  wait "$locker" 2>/dev/null || true
+  for (( i = 0; i < 120; i += 3 )); do
+    ok="$(docker logs --since "$since" "$BACKUPS_CONTAINER" 2>&1 | grep -E "Database backup (OK|FAILED)" | head -n 1 || true)"
+    [[ -n "$ok" ]] && break
+    sleep 3
+  done
+  db_query "DROP TABLE IF EXISTS zz_argv_probe;" > /dev/null 2>&1 || true
+  [[ -n "$dump" ]] || { fail "no dump process appeared within $(( init + 50 ))s of the restart"; return 1; }
+  echo "  the dump, read while it ran: $(sed -E 's/(^| )(-p|--password=?)[^ ]*/\1\2<hidden>/g' <<< "$dump")"
+  [[ "$hits_host" == 0 ]] || { fail "$hits_host command line(s) on the host carried the password ($PW_SUM) while the dump ran"; return 1; }
+  [[ "$hits_bkp" == 0 ]] || { fail "$hits_bkp command line(s) in the backups container carried the password ($PW_SUM) while the dump ran"; return 1; }
+  if grep -qE '(^| )(-p[^ ]*|--password[^ ]*)( |$)' <<< "$dump"; then
+    fail "the dump was given its password as an argument; the client blanks its copy only after it was readable"; return 1
+  fi
+  [[ "$ok" == *"backup OK"* ]] || { fail "the held backup did not finish OK: ${ok:-no result within 120s}"; return 1; }
+  echo "  0 command lines on the host and 0 in the backups container carried the password ($PW_SUM); the backup finished OK"
+}
+
+test_no_password_on_any_command_line() {
+  ps_sampler_stop
+  local samples hits
+  samples=$(wc -l < "$PS_COUNTS" | tr -d '[:space:]')
+  hits=$(awk '$1 > 0 { n++ } END { print n + 0 }' "$PS_COUNTS")
+  [[ "$samples" -ge 100 ]] || { fail "only $samples samples of the host's command lines were taken"; return 1; }
+  [[ "$hits" == 0 ]] || { fail "$hits of $samples samples of the host's command lines carried the password ($PW_SUM)"; return 1; }
+  echo "  $samples samples of every command line on the host during this suite, none with the password ($PW_SUM)"
+}
+
 # --- Main ---
 
 echo "=== Deployment Verification: backup/restore E2E tests ==="
@@ -317,6 +418,7 @@ done
 # stamp the moment the marker exists; the restore test picks the first backup newer than this
 backups_sh "touch ${BACKUPS_PATH}/.e2e-marker-stamp"
 
+ps_sampler_start
 run_test test_env_required
 run_test test_backup_created
 run_test test_backup_gunzip_ok
@@ -326,6 +428,8 @@ run_test test_backup_failure_detected
 run_test test_restore_roundtrip
 run_test test_data_restore_roundtrip
 run_test test_prune_removes_old
+run_test test_dump_runs_without_password_in_argv
+run_test test_no_password_on_any_command_line
 
 echo
 echo "==============================="
