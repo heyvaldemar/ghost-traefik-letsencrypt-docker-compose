@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_(no unreleased changes yet)_
+### Security
+
+- **`traefik:3.7` was rebuilt upstream**; the pin moved from `sha256:b7b1b31e6440…` to `sha256:8301d6f60957…`. Same version, same tag, a rebuilt base image — the usual shape of a security fix in a base layer.
+- **`mysql:8.4-oracle` was rebuilt upstream**; the pin moved from `sha256:a81d043930e5…` to `sha256:8c233bad33d5…`. Same version, same tag, a rebuilt base image — the usual shape of a security fix in a base layer.
+- **`ghost:6.78.0` was rebuilt upstream**; the pin moved from `sha256:985ef9f30fb8…` to `sha256:350cc758211f…`. Same version, same tag, a rebuilt base image — the usual shape of a security fix in a base layer.
 
 ## [1.9.28] - 2026-11-18
 
